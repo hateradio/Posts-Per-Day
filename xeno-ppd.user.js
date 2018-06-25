@@ -1,5 +1,6 @@
 // ==UserScript==
 // @name     ResetEra: Display Posts Per Day
+// @description Displays posts per day average
 // @version  1
 // @grant    none
 // @match    *://*.resetera.com/members/*
