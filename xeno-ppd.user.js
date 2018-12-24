@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name     ResetEra: Display Posts Per Day
 // @description Displays posts per day average
-// @version  3
+// @version  4
 // @grant    none
 // @match    *://*.resetera.com/members/*
 // @match    *://*.resetera.com/threads/*
@@ -23,7 +23,7 @@
             console.log('Found date/messages:', joined, messages)
 
             this.messages = Posts.toInt(messages)
-            this.joined = new Date(joined)
+            this.joined = Posts.toDate(joined)
 
             console.log('Detected date:', this.joined.toString())
         }
@@ -38,16 +38,19 @@
 
         append() {
             const temp = this.template('Posts Per Day', this.average.toFixed(2))
-            this.parent.insertAdjacentHTML('beforeend', temp)
+            this.parents.forEach(p => p.insertAdjacentHTML('beforeend', temp))
         }
 
-        get parent() {
-            return document.querySelector(this.selector)
+        get parents() {
+            return [
+                document.querySelector(this.selector),
+                document.querySelector('.memberHeader-stats dl').parentElement
+            ]
         }
 
         get rawData() {
-            console.log(this.selector, this.parent)
-            return Array.from(this.parent.querySelectorAll('dl'))
+            console.log(this.selector, this.parents)
+            return Array.from(this.parents[0].querySelectorAll('dl'))
                 .reduce((o, d) => {
                     const prop = d.querySelector('dt').textContent.trim().toLowerCase()
                     const content = d.querySelector('time') ? d.querySelector('time').dateTime : d.querySelector('dd').textContent.trim()
@@ -63,6 +66,13 @@
 
         static toInt(str) {
             return +(str.replace(/\D/g, ''))
+        }
+
+        // Fixes date parsing for Safari
+        static toDate(str) {
+            str = str.split('')
+            str.splice(-2, 0, ':')
+            return new Date(str.join(''))
         }
 
         static main() {
@@ -88,8 +98,8 @@
             return `<dl class="pairs pairs--rows pairs--rows--centered re_mainStat"><dt>${title}</dt><dd>${body}</dd></dl>`
         }
 
-        get parent() {
-            return document.querySelector(this.selector).closest('div')
+        get parents() {
+            return [document.querySelector(this.selector).closest('div')]
         }
 
         static listener() {
